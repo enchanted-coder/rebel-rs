@@ -22,7 +22,7 @@ use std::sync::Arc;
 
 use serenity::client::bridge::gateway::ShardManager;
 
-
+use serenity::model::application::command::Command;
 
 use serenity::framework::standard::StandardFramework;
 use serenity::http::Http;
@@ -55,6 +55,29 @@ struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::ApplicationCommand(command) = interaction {
+            println!("Received command interaction: {:#?}", command);
+
+            let content = match command.data.name.as_str() {
+                "ping" => commands::ping::run(&command.data.options),
+                "id" => commands::id::run(&command.data.options),
+                "attachmentinput" => commands::attachmentinput::run(&command.data.options),
+                _ => "not implemented :(".to_string(),
+            };
+
+            if let Err(why) = command
+                .create_interaction_response(&ctx.http, |response| {
+                    response
+                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|message| message.content(content))
+                })
+                .await
+            {
+                println!("Cannot respond to slash command: {}", why);
+            }
+        }
+    }
        
 
     
@@ -65,34 +88,25 @@ impl EventHandler for Handler {
 
         let guild_id = GuildId(746365930224746557);
 
-        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| { command.name("hello").description("Say hello") })
-        }).await.unwrap();
+       let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
+            commands
+            .create_application_command(|command| commands::ping::register(command))
+            .create_application_command(|command| commands::id::register(command))
+            //.create_application_command(|command| commands::welcome::register(command))
+            //.create_application_command(|command| commands::numberinput::register(command))
+            .create_application_command(|command| commands::attachmentinput::register(command))
+       })
+       .await;
 
-        info!("{:#?}", commands);
+       println!("I now have the following guild slash commands: {:#?}", commands);
+
+      
+   }
 
         
-    }
 
-    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(command) = interaction {
-            let response_content = match command.data.name.as_str() {
-                "hello" => "hello".to_owned(),
-                command => unreachable!("Unknown command: {}", command),
-            };
 
-            let create_interaction_response = 
-                command.create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content(response_content))
-                });
-
-            if let Err(why) = create_interaction_response.await {
-                eprintln!("Cannot respond to slash command: {}", why);
-            }
-        }
-    }
+    
 
         
     
