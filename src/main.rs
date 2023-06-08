@@ -1,29 +1,35 @@
+
+
 use anyhow::anyhow;
-use serenity::async_trait;
-use serenity::model::channel::Message;
-use serenity::model::gateway::Ready;
-use serenity::prelude::*;
+use serenity::{
+    async_trait,
+    client::{Client, EventHandler},
+    framework::StandardFramework, model::gateway::Ready,
+    prelude::GatewayIntents,
+    
+};
+
+
 use shuttle_secrets::SecretStore;
-use tracing::{error, info};
+
+
+use songbird::SerenityInit;
+
+use serenity::client::Context;
 
 
 
-struct Bot;
+
+struct Handler;
 
 #[async_trait]
-impl EventHandler for Bot {
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == "!hello" {
-            if let Err(e) = msg.channel_id.say(&ctx.http, "world!").await {
-                error!("Error sending message: {:?}", e);
-            }
-        }
-    }
-
+impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name);
+        println!("{} is connected!", ready.user.name);
     }
 }
+
+
 
 #[shuttle_runtime::main]
 async fn serenity(
@@ -36,13 +42,23 @@ async fn serenity(
         return Err(anyhow!("'DISCORD_TOKEN' was not found").into());
     };
 
+    let framework = StandardFramework::new()
+        .configure(|c| c
+                    .prefix("~"));
+        
+
     // Set gateway intents, which decides what events the bot will be notified about
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
 
     let client = Client::builder(&token, intents)
-        .event_handler(Bot)
+        .event_handler(Handler)
+        .framework(framework)
+        .register_songbird()
         .await
         .expect("Err creating client");
 
+    
+
     Ok(client.into())
 }
+
