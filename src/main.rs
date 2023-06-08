@@ -22,7 +22,6 @@ use std::sync::Arc;
 
 use serenity::client::bridge::gateway::ShardManager;
 
-use serenity::model::application::command::Command;
 
 use serenity::framework::standard::StandardFramework;
 use serenity::http::Http;
@@ -33,7 +32,7 @@ use serenity::model::gateway::Ready;
 
 
 use serenity::prelude::*;
-use tracing::{error, info};
+use tracing::error;
 
 
 
@@ -61,8 +60,7 @@ impl EventHandler for Handler {
 
             let content = match command.data.name.as_str() {
                 "ping" => commands::ping::run(&command.data.options),
-                "id" => commands::id::run(&command.data.options),
-                "attachmentinput" => commands::attachmentinput::run(&command.data.options),
+                
                 _ => "not implemented :(".to_string(),
             };
 
@@ -91,27 +89,14 @@ impl EventHandler for Handler {
        let commands = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
             commands
             .create_application_command(|command| commands::ping::register(command))
-            .create_application_command(|command| commands::id::register(command))
-            //.create_application_command(|command| commands::welcome::register(command))
-            //.create_application_command(|command| commands::numberinput::register(command))
-            .create_application_command(|command| commands::attachmentinput::register(command))
+            
        })
        .await;
 
        println!("I now have the following guild slash commands: {:#?}", commands);
 
       
-   }
-
-        
-
-
-    
-
-        
-    
-
-    
+   }  
 
 }
 
