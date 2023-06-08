@@ -71,7 +71,7 @@ async fn serenity(
 
     let http = Http::new(&token);
 
-    let(owners, _bot_id) = match http.get_current_application_info().await {
+    let(_owners, _bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
             let mut owners = HashSet::new();
             owners.insert(info.owner.id);
