@@ -12,7 +12,7 @@ anyhow = "1.0.71"
 serenity = { version = "0.11", default-features = false, features = ["cache", "standard_framework", "framework", "voice", "client", "gateway", "rustls_backend", "model"] }
 shuttle-secrets = "0.16.0"
 shuttle-serenity = "0.16.0"
-tracing = "0.1.37"
+tracing = "0.1"
 tracing-subscriber = "0.2"
 tracing-futures = "0.2"
 songbird = { version = "0.3.2", features = ["yt-dlp"] }
