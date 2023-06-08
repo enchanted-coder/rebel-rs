@@ -9,7 +9,7 @@ publish = false
 [dependencies]
 shuttle-runtime = "0.16.0"
 anyhow = "1.0.71"
-serenity = { version = "0.11", default-features = false, features = ["standard_framework", "framework", "voice", "client", "gateway", "rustls_backend", "model"] }
+serenity = { version = "0.11", default-features = false, features = ["cache", "standard_framework", "framework", "voice", "client", "gateway", "rustls_backend", "model"] }
 shuttle-secrets = "0.16.0"
 shuttle-serenity = "0.16.0"
 tracing = "0.1.37"

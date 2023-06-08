@@ -31,7 +31,7 @@ use tracing::{error, info};
 
 use crate::commands::math::*;
 use crate::commands::meta::*;
-use crate::commands;:owner::*;
+use crate::commands::owner::*;
 
 
 pub struct ShardManagerContainer;
@@ -55,7 +55,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(multipley, ping, quit)]
+#[commands(multiply, ping, quit)]
 struct General;
 
 #[shuttle_runtime::main]
@@ -74,7 +74,7 @@ async fn serenity(
     let(owners, _bot_id) = match http.get_current_application_info().await {
         Ok(info) => {
             let mut owners = HashSet::new();
-            owners.insert(inf.owner.id);
+            owners.insert(info.owner.id);
 
             (owners, info.id)
         
@@ -85,7 +85,7 @@ async fn serenity(
     let framework = StandardFramework::new()
         .configure(|c| c
                     .prefix("~"))
-                    .group(&GENRAL_GROUP);
+                    .group(&GENERAL_GROUP);
         
 
     // Set gateway intents, which decides what events the bot will be notified about
@@ -108,13 +108,15 @@ async fn serenity(
     let shard_manager = client.shard_manager.clone();
 
     tokio::spawn(async move {
-        tokio::signam::ctrl_c().await.expect("Could not register ctrl+c handler");
+        tokio::signal::ctrl_c().await.expect("Could not register ctrl+c handler");
         shard_manager.lock().await.shutdown_all().await;
     });
 
     if let Err(why) = client.start().await {
         error!("Client error: {:?}", why);
     }
+
+    Ok(client.into())
 
     
 
