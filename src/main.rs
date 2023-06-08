@@ -3,21 +3,19 @@
 use anyhow::anyhow;
 use serenity::{
     async_trait,
-    client::{Client, EventHandler},
-    framework::StandardFramework, model::gateway::Ready,
+    client::{Client, Context, EventHandler},
+    framework::StandardFramework,
+    model::gateway::Ready,
     prelude::GatewayIntents,
     
 };
 
+use tracing::info;
 
 use shuttle_secrets::SecretStore;
 
 
 use songbird::SerenityInit;
-
-use serenity::client::Context;
-
-
 
 
 struct Handler;
@@ -25,7 +23,7 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
+        info!("{} is connected!", ready.user.name);
     }
 }
 
