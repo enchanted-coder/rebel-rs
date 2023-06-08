@@ -12,7 +12,7 @@ use songbird::SerenityInit;
 
 use core::panic;
 use std::collections::HashSet;
-use std::env;
+
 
 use std::sync::Arc;
 
