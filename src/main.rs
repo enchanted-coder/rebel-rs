@@ -32,7 +32,7 @@ use tracing::error;
 
 use serenity::{
     
-    prelude::{GatewayIntents, Mentionable},
+    prelude::GatewayIntents,
     Result as SerenityResult,
 };
 
