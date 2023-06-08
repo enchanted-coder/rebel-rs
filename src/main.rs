@@ -1,6 +1,8 @@
 
 mod commands;
 
+use std::time::Duration;
+use tokio::time::sleep;
 use std::collections::{HashMap, HashSet};
 use anyhow::anyhow;
 use serenity::{
@@ -24,10 +26,10 @@ use serenity::http::Http;
 use serenity::model::event::ResumedEvent;
 
 use serenity::model::gateway::Ready;
-use serenity::model::channel::{Channel, Message};
+use serenity::model::channel::Message;
 use serenity::framework::standard::macros::hook;
-use serenity::framework::standard::{Args, CommandGroup, CommandResult, HelpOptions, DispatchError};
-use serenity::model::prelude::UserId;
+use serenity::framework::standard::{CommandResult, DispatchError};
+
 
 use serenity::prelude::*;
 use tracing::{error, info};
@@ -55,7 +57,9 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name);
+        if let Some(shard) = ready.shard {
+            println!("{} is connected on shard {}/{}", ready.user.name, shard[0], shard[1]);
+        }
     }
 
     async fn resume(&self, _: Context, _: ResumedEvent) {
@@ -256,12 +260,25 @@ async fn serenity(
         data.insert::<ShardManagerContainer>(client.shard_manager.clone());
     }
 
-    let shard_manager = client.shard_manager.clone();
+    let manager = client.shard_manager.clone();
 
     tokio::spawn(async move {
-        tokio::signal::ctrl_c().await.expect("Could not register ctrl+c handler");
-        shard_manager.lock().await.shutdown_all().await;
+        loop{
+            sleep(Duration::from_secs(30)).await;
+
+            let lock = manager.lock().await;
+            let shard_runners = lock.runners.lock().await;
+
+            for (id, runner) in shard_runners.iter() {
+                println!(
+                    "Shard ID {} is {} with a latency of {:?}",
+                    id, runner.stage, runner.latency,
+                );
+            }
+        }
     });
+
+    // starts shards
 
     if let Err(why) = client.start_shards(2).await {
         error!("Client error: {:?}", why);
