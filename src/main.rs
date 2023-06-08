@@ -64,7 +64,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(say, commands, ping, quit)]
+#[commands(say, latency, commands, ping, quit)]
 struct General;
 
 

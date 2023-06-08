@@ -1,3 +1,4 @@
+use serenity::client::bridge::gateway::ShardId;
 use serenity::framework::standard::macros::command;
 use serenity::framework::standard::{Args, CommandResult};
 use serenity::model::prelude::*;
@@ -5,7 +6,14 @@ use serenity::prelude::*;
 use serenity::utils::{content_safe, ContentSafeOptions};
 use std::fmt::Write;
 
-use crate::CommandCounter;
+use crate::{CommandCounter, ShardManagerContainer};
+
+#[command]
+async fn about(ctx: &Context, msg: &Message) -> CommandResult {
+    msg.channel_id.say(&ctx.http, "This is a small test-bot! : )").await?;
+
+    Ok(())
+}
 
 #[command]
 #[bucket = "complicated"]
@@ -61,3 +69,33 @@ async fn say(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     };
 }
 
+#[command]
+async fn latency(ctx: &Context, msg: &Message) -> CommandResult {
+    
+    let data = ctx.data.read().await;
+    
+    let shard_manager =  match data.get::<ShardManagerContainer>() {
+        Some(v) => v,
+        None => {
+            msg.reply(ctx, "There was a problem getting the shard manager").await?;
+
+            return Ok(());
+        },
+    };
+
+    let manager = shard_manager.lock().await;
+    let runners = manager.runners.lock().await;
+
+    let runner = match runners.get(&ShardId(ctx.shard_id)) {
+        Some(runner) => runner,
+        None => {
+            msg.reply(ctx, "No shard found").await?;
+
+            return Ok(());
+        },
+    };
+
+    msg.reply(ctx, &format!("The shard latency is {:?}", runner.latency)).await?;
+
+    Ok(())
+}
