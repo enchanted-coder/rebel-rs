@@ -14,7 +14,7 @@ fn main() {
             .arg("libtool")
             .arg("m4")
             .arg("ffmpeg")
-            .arg("yt-dlp")
+            //.arg("yt-dlp")
             
             .status()
             .expect("failed to run apt")
