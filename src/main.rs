@@ -68,22 +68,22 @@ impl EventHandler for Handler {
 #[commands(say, join, deafen, play, leave, mute, unmute)]
 struct General;
 
+struct MyService {}
 
+#[shuttle_runtime::async_trait]
+impl shuttle_runtime::Service for MyService {
+    async fn bind(self, _addr: std::net::SocketAddr) -> Result<(), shuttle_runtime::Error> {
+        Ok(())
+    }
+}
 
 
 #[shuttle_runtime::main]
 async fn serenity(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
-) -> shuttle_serenity::ShuttleSerenity {
+) ->  shuttle_serenity::ShuttleSerenity {
 
-    struct MyService {}
-
-    #[shuttle_runtime::async_trait]
-    impl shuttle_runtime::Service for MyService {
-        async fn bind(self, _addr: std::net::SocketAddr) -> Result<(), shuttle_runtime::Error> {
-            Ok(())
-        }
-    }
+    
 
     // Get the discord token set in `Secrets.toml`
     let token = if let Some(token) = secret_store.get("DISCORD_TOKEN") {
@@ -170,14 +170,19 @@ async fn serenity(
     if let Err(why) = client.start_shards(2).await {
         error!("Client error: {:?}", why);
     }
-
+    shuttle_main().await?;
     Ok(client.into())
+
+    
 
     
 
     
 }
 
+async fn shuttle_main() -> Result<MyService, shuttle_runtime::Error> {
+    Ok(MyService {})
+}
 
 
 #[command]
