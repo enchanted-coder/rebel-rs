@@ -248,32 +248,7 @@ async fn deafen(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-#[command]
-#[only_in(guilds)]
-async fn join(ctx: &Context, msg: &Message) -> CommandResult {
-    let guild = msg.guild(&ctx.cache).unwrap();
-    let guild_id = guild.id;
 
-    let channel_id = guild
-        .voice_states.get(&msg.author.id)
-        .and_then(|voice_state| voice_state.channel_id);
-
-    let connect_to = match channel_id {
-        Some(channel) => channel,
-        None => {
-            check_msg(msg.reply(ctx, "Not in a voice channel").await);
-
-            return Ok(());
-        }
-    };
-
-    let manager = songbird::get(ctx).await
-        .expect("Songbird Voice client placed in at initialisation.").clone();
-
-    let _handler = manager.join(guild_id, connect_to).await;
-
-    Ok(())
-}
 
 #[command]
 #[only_in(guilds)]
@@ -333,6 +308,33 @@ async fn mute(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 #[only_in(guilds)]
+async fn join(ctx: &Context, msg: &Message) -> CommandResult {
+    let guild = msg.guild(&ctx.cache).unwrap();
+    let guild_id = guild.id;
+
+    let channel_id = guild
+        .voice_states.get(&msg.author.id)
+        .and_then(|voice_state| voice_state.channel_id);
+
+    let connect_to = match channel_id {
+        Some(channel) => channel,
+        None => {
+            check_msg(msg.reply(ctx, "Not in a voice channel").await);
+
+            return Ok(());
+        }
+    };
+
+    let manager = songbird::get(ctx).await
+        .expect("Songbird Voice client placed in at initialisation.").clone();
+
+    let _handler = manager.join(guild_id, connect_to).await;
+
+    Ok(())
+}
+
+#[command]
+#[only_in(guilds)]
 async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let url = match args.single::<String>() {
         Ok(url) => url,
@@ -351,6 +353,24 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
     let guild = msg.guild(&ctx.cache).unwrap();
     let guild_id = guild.id;
+
+    let channel_id = guild
+        .voice_states.get(&msg.author.id)
+        .and_then(|voice_state| voice_state.channel_id);
+
+    let connect_to = match channel_id {
+        Some(channel) => channel,
+        None => {
+            check_msg(msg.reply(ctx, "Not in a voice channel").await);
+
+            return Ok(());
+        }
+    };
+
+    let manager = songbird::get(ctx).await
+        .expect("Songbird Voice client placed in at initialisation.").clone();
+
+    let _handler = manager.join(guild_id, connect_to).await;
 
     let manager = songbird::get(ctx).await
         .expect("Songbird Voice client placed in at initialisation.").clone();
